@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(xcopy /E /I /Y \"C:\\\\Users\\\\inon\\\\working-projects\\\\CC-Project\\\\frontend-tmp\\\\*\" \"C:\\\\Users\\\\inon\\\\working-projects\\\\CC-Project\\\\frontend\"\" 2>&1 && rmdir /S /Q \"C:Usersinonworking-projectsCC-Projectfrontend-tmp \")",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss@latest:*)",
+      "Bash(npm ls:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vite build)",
+      "Bash(pip install:*)",
+      "Bash(where:*)",
+      "Bash(python -m pip install:*)",
+      "Bash(npx vitest run:*)",
+      "Bash(npx vite:*)",
+      "Bash(docker info:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose:*)",
+      "Bash(curl:*)",
+      "Bash(docker volume rm:*)",
+      "Bash(node:*)",
+      "Bash(npm test:*)",
+      "Bash(git -C \"C:/Users/inon/working-projects/CC-Project\" status)",
+      "Bash(git -C \"C:/Users/inon/working-projects/CC-Project\" log --oneline -5)",
+      "Bash(winget install:*)",
+      "Bash(export PATH=\"$PATH:/c/Program Files/GitHub CLI:/c/Program Files \\(x86\\)/GitHub CLI\")",
+      "Bash(gh:*)",
+      "Bash(git -C \"C:/Users/inon/working-projects/CC-Project\" add .gitignore CLAUDE.md TODO docs backend docker-compose.yml frontend iteries-processes .claude)"
+    ]
+  }
+}
