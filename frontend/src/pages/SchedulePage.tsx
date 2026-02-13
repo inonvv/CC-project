@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useTripStore } from '@/store/tripStore';
 import api from '@/services/api';
 import type { Segment } from '@/types';
+import planeGif from '@/assets/plane.gif';
 
 export default function SchedulePage() {
   const navigate = useNavigate();
@@ -189,8 +190,9 @@ export default function SchedulePage() {
                   }`}
                 >
                   <div className="border-t border-border px-4 py-3">
-                    <p className="mb-2 text-xs font-medium text-muted-foreground">
-                      Flight: {segments[inboundIdx].from} → {segments[inboundIdx].to}
+                    <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                      <img src={planeGif} alt="" className="h-4 w-4" />
+                      {segments[inboundIdx].from} → {segments[inboundIdx].to}
                     </p>
                     <div className="flex gap-2 overflow-x-auto pb-1">
                       {segments[inboundIdx].options.map((opt) => (
@@ -220,14 +222,13 @@ export default function SchedulePage() {
         {segments.length > 0 && (
           <div className="rounded-xl border border-border bg-white shadow-sm">
             <div className="flex items-center gap-3 p-4">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
-                &#x2708;
-              </span>
+              <img src={planeGif} alt="" className="h-8 w-8" />
               <span className="text-lg font-semibold text-muted-foreground">Return Home</span>
             </div>
             <div className="border-t border-border px-4 py-3">
-              <p className="mb-2 text-xs font-medium text-muted-foreground">
-                Flight: {segments[segments.length - 1].from} → {segments[segments.length - 1].to}
+              <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <img src={planeGif} alt="" className="h-4 w-4" />
+                {segments[segments.length - 1].from} → {segments[segments.length - 1].to}
               </p>
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {segments[segments.length - 1].options.map((opt) => (
@@ -250,6 +251,13 @@ export default function SchedulePage() {
           </div>
         )}
       </div>
+
+      {segments.length === 0 && destinations.length > 0 && (
+        <div className="mt-6 flex flex-col items-center py-8">
+          <img src={planeGif} alt="Loading" className="mb-3 h-12 w-12" />
+          <p className="text-sm text-muted-foreground">Computing flight routes...</p>
+        </div>
+      )}
 
       {!allFlightsSelected && segments.length > 0 && (
         <p className="mt-4 text-sm text-muted-foreground">

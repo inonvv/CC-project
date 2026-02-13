@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -32,20 +33,55 @@ export function StepLayout({
 }: StepLayoutProps) {
   const navigate = useNavigate();
   const previewMode = useTripStore((s) => s.previewMode);
+  const [transitioning, setTransitioning] = useState(false);
 
   const handleStepClick = (i: number) => {
-    // In preview mode, allow clicking any completed step or current step
     if (previewMode && i <= 5) {
       navigate(STEPS[i].path);
-    }
-    // In normal mode, allow clicking completed (past) steps for back-navigation
-    else if (i < currentStep) {
+    } else if (i < currentStep) {
       navigate(STEPS[i].path);
     }
   };
 
+  const handleNext = useCallback(() => {
+    if (!onNext) return;
+    setTransitioning(true);
+    setTimeout(() => {
+      onNext();
+      setTransitioning(false);
+    }, 700);
+  }, [onNext]);
+
+  const handleBack = useCallback(() => {
+    if (currentStep > 0) {
+      navigate(STEPS[currentStep - 1].path);
+    }
+  }, [currentStep, navigate]);
+
   return (
     <div className="min-h-screen bg-white">
+      {/* Plane fly-across transition overlay */}
+      <AnimatePresence>
+        {transitioning && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <motion.img
+              src={planeGif}
+              alt=""
+              className="h-20 w-20"
+              initial={{ x: '-40vw', opacity: 0, scale: 0.6 }}
+              animate={{ x: '40vw', opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 0.6] }}
+              transition={{ duration: 0.65, ease: 'easeInOut' }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Preview mode banner */}
       {previewMode && (
         <div className="bg-primary/10 px-4 py-2 text-center text-sm font-medium text-primary">
@@ -62,52 +98,87 @@ export function StepLayout({
         </div>
       )}
 
-      {/* Step Indicator */}
-      <div className="border-b border-border bg-white px-4 py-3">
-        <div className="mx-auto flex max-w-4xl items-center justify-center gap-2">
+      {/* Step Indicator — flight path style */}
+      <div className="border-b border-border bg-white px-4 py-4">
+        <div className="mx-auto flex max-w-4xl items-center justify-center">
           {STEPS.map((step, i) => {
             const isClickable = previewMode || i < currentStep;
+            const isCompleted = i < currentStep;
+            const isCurrent = i === currentStep;
             return (
-              <div key={step.path} className="flex items-center gap-2">
-                <div className="relative">
+              <div key={step.path} className="flex items-center">
+                {/* Step node */}
+                <div className="relative flex flex-col items-center">
                   <button
                     onClick={() => handleStepClick(i)}
                     disabled={!isClickable}
-                    className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-transform duration-200 ${
+                    className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-all duration-300 ${
                       isClickable ? 'cursor-pointer hover:scale-110' : 'cursor-default'
                     } ${
-                      i === currentStep
-                        ? 'bg-primary text-white'
-                        : i < currentStep
+                      isCurrent
+                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                        : isCompleted
                           ? 'bg-primary/20 text-primary'
                           : 'bg-muted text-muted-foreground'
                     }`}
                   >
-                    {i + 1}
+                    {isCompleted ? (
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      i + 1
+                    )}
                   </button>
-                  <AnimatePresence>
-                    {i === currentStep && (
+
+                  {/* Plane on current step */}
+                  <AnimatePresence mode="wait">
+                    {isCurrent && (
                       <motion.img
+                        key={`plane-${i}`}
                         src={planeGif}
                         alt=""
-                        initial={{ opacity: 0, scale: 0.5, y: 4 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.5 }}
-                        transition={{ duration: 0.3 }}
-                        className="absolute -top-5 left-1/2 h-5 w-5 -translate-x-1/2"
+                        initial={{ opacity: 0, y: 6, scale: 0.4 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.4 }}
+                        transition={{ duration: 0.35, ease: 'easeOut' }}
+                        className="absolute -top-7 h-6 w-6"
                       />
                     )}
                   </AnimatePresence>
+
+                  {/* Step label */}
+                  <span
+                    className={`mt-1 hidden text-[10px] sm:block ${
+                      isCurrent
+                        ? 'font-bold text-primary'
+                        : isCompleted
+                          ? 'font-medium text-primary/70'
+                          : 'text-muted-foreground'
+                    }`}
+                  >
+                    {step.label}
+                  </span>
                 </div>
-                <span
-                  className={`hidden text-sm sm:inline ${
-                    i === currentStep ? 'font-semibold text-foreground' : 'text-muted-foreground'
-                  }`}
-                >
-                  {step.label}
-                </span>
+
+                {/* Connector line (dashed flight path) */}
                 {i < STEPS.length - 1 && (
-                  <div className="mx-1 h-px w-4 bg-border sm:w-8" />
+                  <div className="relative mx-1 h-[2px] w-6 sm:mx-2 sm:w-12">
+                    {/* Background dashed line */}
+                    <div
+                      className="absolute inset-0 border-t-2 border-dashed border-muted"
+                    />
+                    {/* Filled progress line */}
+                    {isCompleted && (
+                      <motion.div
+                        className="absolute inset-0 border-t-2 border-primary"
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ duration: 0.3, delay: i * 0.05 }}
+                        style={{ transformOrigin: 'left' }}
+                      />
+                    )}
+                  </div>
                 )}
               </div>
             );
@@ -118,9 +189,9 @@ export function StepLayout({
       {/* Content */}
       <motion.div
         key={currentStep}
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.25, delay: 0.05 }}
         className="mx-auto max-w-4xl px-4 py-8 pb-24"
       >
         {children}
@@ -132,16 +203,19 @@ export function StepLayout({
           <div className="mx-auto flex max-w-4xl justify-between">
             <Button
               variant="outline"
-              onClick={() => {
-                if (currentStep > 0) navigate(STEPS[currentStep - 1].path);
-              }}
+              onClick={handleBack}
               disabled={currentStep === 0}
             >
               Back
             </Button>
             {onNext && (
-              <Button onClick={onNext} disabled={nextDisabled}>
+              <Button
+                onClick={handleNext}
+                disabled={nextDisabled || transitioning}
+                className="gap-2"
+              >
                 {nextLabel}
+                <img src={planeGif} alt="" className="h-5 w-5" />
               </Button>
             )}
           </div>

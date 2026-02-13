@@ -50,18 +50,25 @@ export default function OnboardingPage() {
   return (
     <StepLayout currentStep={0} hideNav>
       <div className="flex flex-col items-center pb-12 pt-8 text-center">
-        <motion.img
-          src={planeGif}
-          alt="Fly & Travel"
-          initial={{ opacity: 0, scale: 0.8 }}
+        {/* Floating plane logo */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.6 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4 }}
-          className="mb-4 h-24 w-24"
-        />
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        >
+          <motion.img
+            src={planeGif}
+            alt="Fly & Travel"
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            className="mb-5 h-28 w-28"
+          />
+        </motion.div>
+
         <motion.h1
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.3 }}
+          transition={{ delay: 0.15, duration: 0.3 }}
           className="mb-2 text-4xl font-bold text-foreground"
         >
           Fly & Travel
@@ -69,7 +76,7 @@ export default function OnboardingPage() {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.15, duration: 0.3 }}
+          transition={{ delay: 0.25, duration: 0.3 }}
           className="mb-10 max-w-md text-lg text-muted-foreground"
         >
           Plan your perfect multi-destination trip across European capitals in 5 simple steps.
@@ -103,8 +110,9 @@ export default function OnboardingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.3 }}
         >
-          <Button size="lg" onClick={() => navigate('/destinations')}>
+          <Button size="lg" onClick={() => navigate('/destinations')} className="gap-2 text-base">
             Start Planning
+            <img src={planeGif} alt="" className="h-6 w-6" />
           </Button>
         </motion.div>
       </div>

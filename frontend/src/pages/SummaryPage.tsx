@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTripStore } from '@/store/tripStore';
 import { motion } from 'framer-motion';
 import api from '@/services/api';
+import planeGif from '@/assets/plane.gif';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -68,12 +69,22 @@ export default function SummaryPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
+            className="flex flex-col items-center"
           >
+            <motion.img
+              src={planeGif}
+              alt="Trip Confirmed"
+              initial={{ scale: 0.4, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
+              className="mb-6 h-24 w-24"
+            />
             <h2 className="mb-4 text-3xl font-bold text-primary">Trip Confirmed!</h2>
             <p className="mb-6 text-lg text-muted-foreground">
               Your trip has been saved. Total cost: ${totalPrice.toFixed(2)}
             </p>
-            <Button variant="outline" onClick={handlePreview}>
+            <Button variant="outline" onClick={handlePreview} className="gap-2">
+              <img src={planeGif} alt="" className="h-5 w-5" />
               Review My Trip
             </Button>
           </motion.div>
@@ -125,7 +136,10 @@ export default function SummaryPage() {
           <motion.div variants={fadeUp} custom={2}>
             <Card>
               <CardHeader>
-                <CardTitle>Flights</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <img src={planeGif} alt="" className="h-5 w-5" />
+                  Flights
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -210,8 +224,18 @@ export default function SummaryPage() {
           </motion.div>
 
           <motion.div variants={fadeUp} custom={6} className="pb-8 text-center">
-            <Button size="lg" onClick={handleConfirm} disabled={saving}>
-              {saving ? 'Saving...' : 'Fly Me A Travel'}
+            <Button size="lg" onClick={handleConfirm} disabled={saving} className="gap-2 text-base">
+              {saving ? (
+                <>
+                  <img src={planeGif} alt="" className="h-5 w-5" />
+                  Booking your trip...
+                </>
+              ) : (
+                <>
+                  Fly Me A Travel
+                  <img src={planeGif} alt="" className="h-6 w-6" />
+                </>
+              )}
             </Button>
           </motion.div>
         </motion.div>
