@@ -108,21 +108,31 @@ export function StepLayout({
             return (
               <div key={step.path} className="flex items-center">
                 {/* Step node */}
-                <div className="relative flex flex-col items-center">
+                <div className="flex flex-col items-center">
                   <button
                     onClick={() => handleStepClick(i)}
                     disabled={!isClickable}
-                    className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-all duration-300 ${
+                    className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-all duration-300 ${
                       isClickable ? 'cursor-pointer hover:scale-110' : 'cursor-default'
                     } ${
                       isCurrent
-                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                        ? 'bg-primary/10 shadow-lg shadow-primary/20'
                         : isCompleted
                           ? 'bg-primary/20 text-primary'
                           : 'bg-muted text-muted-foreground'
                     }`}
                   >
-                    {isCompleted ? (
+                    {isCurrent ? (
+                      <motion.img
+                        key={`plane-${i}`}
+                        src={planeGif}
+                        alt=""
+                        initial={{ opacity: 0, scale: 0.4, rotate: -20 }}
+                        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                        transition={{ duration: 0.35, ease: 'easeOut' }}
+                        className="h-7 w-7"
+                      />
+                    ) : isCompleted ? (
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
@@ -130,22 +140,6 @@ export function StepLayout({
                       i + 1
                     )}
                   </button>
-
-                  {/* Plane on current step */}
-                  <AnimatePresence mode="wait">
-                    {isCurrent && (
-                      <motion.img
-                        key={`plane-${i}`}
-                        src={planeGif}
-                        alt=""
-                        initial={{ opacity: 0, y: 6, scale: 0.4 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -6, scale: 0.4 }}
-                        transition={{ duration: 0.35, ease: 'easeOut' }}
-                        className="absolute -top-7 h-6 w-6"
-                      />
-                    )}
-                  </AnimatePresence>
 
                   {/* Step label */}
                   <span
