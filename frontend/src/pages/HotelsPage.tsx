@@ -5,6 +5,7 @@ import { HotelCard } from '@/components/HotelCard';
 import { useTripStore } from '@/store/tripStore';
 import api from '@/services/api';
 import type { Hotel } from '@/types';
+import planeGif from '@/assets/plane.gif';
 
 const ROOM_TYPES = ['Queen', 'King', 'Twin', 'Suite'] as const;
 
@@ -82,7 +83,10 @@ export default function HotelsPage() {
       <h2 className="mb-6 text-2xl font-bold">Choose Your Hotels</h2>
 
       {loading ? (
-        <p className="text-muted-foreground">Loading hotels...</p>
+        <div className="flex flex-col items-center justify-center py-16">
+          <img src={planeGif} alt="Loading" className="mb-3 h-16 w-16" />
+          <p className="text-sm text-muted-foreground">Finding the best hotels...</p>
+        </div>
       ) : (
         <div className="space-y-8">
           {destinations.map((dest) => (

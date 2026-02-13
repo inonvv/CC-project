@@ -5,6 +5,7 @@ import { AttractionCard } from '@/components/AttractionCard';
 import { useTripStore } from '@/store/tripStore';
 import api from '@/services/api';
 import type { Attraction } from '@/types';
+import planeGif from '@/assets/plane.gif';
 
 export default function AttractionsPage() {
   const navigate = useNavigate();
@@ -63,7 +64,10 @@ export default function AttractionsPage() {
       <h2 className="mb-6 text-2xl font-bold">Choose Your Attractions</h2>
 
       {loading ? (
-        <p className="text-muted-foreground">Loading attractions...</p>
+        <div className="flex flex-col items-center justify-center py-16">
+          <img src={planeGif} alt="Loading" className="mb-3 h-16 w-16" />
+          <p className="text-sm text-muted-foreground">Discovering top attractions...</p>
+        </div>
       ) : (
         <div className="space-y-8">
           {destinations.map((dest) => (

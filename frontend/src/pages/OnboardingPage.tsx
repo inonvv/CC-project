@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { StepLayout } from '@/components/StepLayout';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { motion } from 'framer-motion';
+import planeGif from '@/assets/plane.gif';
 
 const STEPS_INFO = [
   {
@@ -49,10 +50,18 @@ export default function OnboardingPage() {
   return (
     <StepLayout currentStep={0} hideNav>
       <div className="flex flex-col items-center pb-12 pt-8 text-center">
+        <motion.img
+          src={planeGif}
+          alt="Fly & Travel"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="mb-4 h-24 w-24"
+        />
         <motion.h1
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ delay: 0.1, duration: 0.3 }}
           className="mb-2 text-4xl font-bold text-foreground"
         >
           Fly & Travel

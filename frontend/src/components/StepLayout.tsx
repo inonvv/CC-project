@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTripStore } from '@/store/tripStore';
+import planeGif from '@/assets/plane.gif';
 
 const STEPS = [
   { path: '/', label: 'Start' },
@@ -68,21 +69,36 @@ export function StepLayout({
             const isClickable = previewMode || i < currentStep;
             return (
               <div key={step.path} className="flex items-center gap-2">
-                <button
-                  onClick={() => handleStepClick(i)}
-                  disabled={!isClickable}
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-transform duration-200 ${
-                    isClickable ? 'cursor-pointer hover:scale-110' : 'cursor-default'
-                  } ${
-                    i === currentStep
-                      ? 'bg-primary text-white'
-                      : i < currentStep
-                        ? 'bg-primary/20 text-primary'
-                        : 'bg-muted text-muted-foreground'
-                  }`}
-                >
-                  {i + 1}
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => handleStepClick(i)}
+                    disabled={!isClickable}
+                    className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-transform duration-200 ${
+                      isClickable ? 'cursor-pointer hover:scale-110' : 'cursor-default'
+                    } ${
+                      i === currentStep
+                        ? 'bg-primary text-white'
+                        : i < currentStep
+                          ? 'bg-primary/20 text-primary'
+                          : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                  <AnimatePresence>
+                    {i === currentStep && (
+                      <motion.img
+                        src={planeGif}
+                        alt=""
+                        initial={{ opacity: 0, scale: 0.5, y: 4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.5 }}
+                        transition={{ duration: 0.3 }}
+                        className="absolute -top-5 left-1/2 h-5 w-5 -translate-x-1/2"
+                      />
+                    )}
+                  </AnimatePresence>
+                </div>
                 <span
                   className={`hidden text-sm sm:inline ${
                     i === currentStep ? 'font-semibold text-foreground' : 'text-muted-foreground'
