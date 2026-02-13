@@ -89,3 +89,8 @@
     font-family: system-ui, -apple-system, sans-serif;
   }
 }
+
+/* Make plane.gif white background transparent everywhere */
+img[src*="plane.gif"] {
+  mix-blend-mode: multiply;
+}

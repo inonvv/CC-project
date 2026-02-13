@@ -33,6 +33,7 @@ export function StepLayout({
 }: StepLayoutProps) {
   const navigate = useNavigate();
   const previewMode = useTripStore((s) => s.previewMode);
+  const resetTrip = useTripStore((s) => s.resetTrip);
   const [transitioning, setTransitioning] = useState(false);
 
   const handleStepClick = (i: number) => {
@@ -58,6 +59,11 @@ export function StepLayout({
     }
   }, [currentStep, navigate]);
 
+  const handleReset = useCallback(() => {
+    resetTrip();
+    navigate('/');
+  }, [resetTrip, navigate]);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Plane fly-across transition overlay */}
@@ -74,6 +80,7 @@ export function StepLayout({
               src={planeGif}
               alt=""
               className="h-20 w-20"
+
               initial={{ x: '-40vw', opacity: 0, scale: 0.6 }}
               animate={{ x: '40vw', opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 0.6] }}
               transition={{ duration: 0.65, ease: 'easeInOut' }}
@@ -131,6 +138,7 @@ export function StepLayout({
                         animate={{ opacity: 1, scale: 1, rotate: 0 }}
                         transition={{ duration: 0.35, ease: 'easeOut' }}
                         className="h-7 w-7"
+          
                       />
                     ) : isCompleted ? (
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -158,11 +166,7 @@ export function StepLayout({
                 {/* Connector line (dashed flight path) */}
                 {i < STEPS.length - 1 && (
                   <div className="relative mx-1 h-[2px] w-6 sm:mx-2 sm:w-12">
-                    {/* Background dashed line */}
-                    <div
-                      className="absolute inset-0 border-t-2 border-dashed border-muted"
-                    />
-                    {/* Filled progress line */}
+                    <div className="absolute inset-0 border-t-2 border-dashed border-muted" />
                     {isCompleted && (
                       <motion.div
                         className="absolute inset-0 border-t-2 border-primary"
@@ -194,7 +198,7 @@ export function StepLayout({
       {/* Navigation */}
       {!hideNav && !previewMode && (
         <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-white px-4 py-4">
-          <div className="mx-auto flex max-w-4xl justify-between">
+          <div className="mx-auto flex max-w-4xl items-center justify-between">
             <Button
               variant="outline"
               onClick={handleBack}
@@ -202,16 +206,31 @@ export function StepLayout({
             >
               Back
             </Button>
-            {onNext && (
+
+            <div className="flex items-center gap-2">
               <Button
-                onClick={handleNext}
-                disabled={nextDisabled || transitioning}
-                className="gap-2"
+                variant="ghost"
+                onClick={handleReset}
+                className="text-muted-foreground hover:text-destructive"
               >
-                {nextLabel}
-                <img src={planeGif} alt="" className="h-5 w-5" />
+                Reset
               </Button>
-            )}
+              {onNext && (
+                <Button
+                  onClick={handleNext}
+                  disabled={nextDisabled || transitioning}
+                  className="gap-2"
+                >
+                  {nextLabel}
+                  <img
+                    src={planeGif}
+                    alt=""
+                    className="h-5 w-5"
+      
+                  />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       )}
