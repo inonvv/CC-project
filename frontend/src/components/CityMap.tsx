@@ -22,7 +22,7 @@ function MapUpdater() {
   useEffect(() => {
     if (destinations.length > 0) {
       const bounds = L.latLngBounds(destinations.map((d) => [d.lat, d.lng]));
-      map.fitBounds(bounds, { padding: [50, 50] });
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 6 });
     }
   }, [destinations, map]);
 
@@ -71,7 +71,7 @@ export function CityMap({ capitals }: CityMapProps) {
   const selectedIds = new Set(destinations.map((d) => d.id));
 
   return (
-    <div className="relative h-[400px] overflow-hidden rounded-lg border border-border">
+    <div className="relative z-0 h-[400px] overflow-hidden rounded-lg border border-border">
       <MapContainer
         center={[50, 15]}
         zoom={4}
@@ -112,7 +112,7 @@ export function CityMap({ capitals }: CityMapProps) {
       {destinations.length > 0 && (
         <button
           onClick={clearDestinations}
-          className="absolute bottom-3 left-3 z-[1000] rounded bg-white px-3 py-1.5 text-xs font-medium text-destructive shadow-md border border-border transition-transform duration-200 hover:scale-105"
+          className="absolute bottom-3 left-3 z-[1000] rounded bg-card px-3 py-1.5 text-xs font-medium text-destructive shadow-md border border-border transition-transform duration-200 hover:scale-105"
         >
           Clear All
         </button>

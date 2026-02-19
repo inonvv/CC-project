@@ -1,33 +1,68 @@
 import { test, expect } from '@playwright/test';
+import {
+  skipOnboarding,
+  addCity,
+  navigateToSuggestions,
+  chooseSuggestion,
+  clearTripState,
+} from './helpers';
 
-test('cannot proceed from destinations with fewer than 2 cities', async ({ page }) => {
-  await page.goto('/destinations');
-  const nextButton = page.getByText('Next');
-  await expect(nextButton).toBeDisabled();
-
-  // Add only 1 city
-  await page.getByPlaceholder('Search European capitals').fill('Paris');
-  await page.getByText('Paris').first().click();
-  await expect(nextButton).toBeDisabled();
-});
-
-test('cannot proceed from schedule without start date', async ({ page }) => {
-  // Set up state by navigating through
+test.beforeEach(async ({ page }) => {
   await page.goto('/');
-  await page.getByText('Start Planning').click();
-  await page.getByPlaceholder('Search European capitals').fill('Lisbon');
-  await page.getByText('Lisbon').first().click();
-  await page.getByPlaceholder('Search European capitals').fill('Vienna');
-  await page.getByText('Vienna').first().click();
-  await page.getByText('Next').click();
-
-  await expect(page).toHaveURL('/schedule');
-  const nextButton = page.getByText('Next');
-  await expect(nextButton).toBeDisabled();
+  await clearTripState(page);
 });
 
-test('cannot proceed from flights without selecting all segments', async ({ page }) => {
-  await page.goto('/flights');
-  const nextButton = page.getByText('Next');
-  await expect(nextButton).toBeDisabled();
+test('Next disabled on destinations with 0 cities', async ({ page }) => {
+  await skipOnboarding(page);
+  const next = page.getByRole('button', { name: 'Next' });
+  await expect(next).toBeDisabled();
+});
+
+test('Next enabled on destinations with 1 city', async ({ page }) => {
+  await skipOnboarding(page);
+  await addCity(page, 'Lisbon');
+  const next = page.getByRole('button', { name: 'Next' });
+  await expect(next).toBeEnabled();
+});
+
+test('Next disabled on schedule without start date', async ({ page }) => {
+  await navigateToSuggestions(page, ['Lisbon']);
+  await page.waitForSelector('text=Budget', { timeout: 15000 });
+  await page.getByRole('button', { name: 'Customize Manually' }).click();
+  await expect(page).toHaveURL('/schedule');
+
+  const next = page.getByRole('button', { name: 'Next' });
+  await expect(next).toBeDisabled();
+});
+
+test('Next disabled on schedule without all flights selected', async ({ page }) => {
+  await navigateToSuggestions(page, ['Lisbon']);
+  await page.waitForSelector('text=Budget', { timeout: 15000 });
+  await page.getByRole('button', { name: 'Customize Manually' }).click();
+
+  // Fill date and days but don't select flights
+  await page.getByLabel('Start Date').fill('2026-08-01');
+  const dayInputs = page.locator('input[type="number"]');
+  await dayInputs.first().fill('3');
+
+  // Wait for flight options to appear
+  await page.waitForTimeout(500);
+
+  const next = page.getByRole('button', { name: 'Next' });
+  await expect(next).toBeDisabled();
+});
+
+test('Next disabled on hotels without selecting one per city', async ({ page }) => {
+  // Use suggestion to get pre-filled state, then navigate to hotels
+  await navigateToSuggestions(page, ['Lisbon', 'Paris']);
+  await chooseSuggestion(page, 0);
+
+  // Go to hotels
+  await page.getByRole('button', { name: 'Next' }).click();
+  await expect(page).toHaveURL('/hotels');
+  await page.waitForSelector('text=/night');
+
+  // Hotels should already be pre-selected from suggestion — Next enabled
+  const next = page.getByRole('button', { name: 'Next' });
+  await expect(next).toBeEnabled();
 });

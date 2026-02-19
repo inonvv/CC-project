@@ -1,70 +1,92 @@
 import { test, expect } from '@playwright/test';
+import {
+  skipOnboarding,
+  addCity,
+  chooseSuggestion,
+  fillScheduleManually,
+  selectHotelsForAllCities,
+  selectAttractionsForAllCities,
+  clearTripState,
+} from './helpers';
 
-test('full happy path: onboarding through confirmation', async ({ page }) => {
-  // Step 1: Onboarding
+test.beforeEach(async ({ page }) => {
   await page.goto('/');
+  await clearTripState(page);
+});
+
+test('full flow via Budget suggestion — onboarding through confirmation', async ({ page }) => {
+  // Step 0: Onboarding — click through all slides
   await expect(page.getByText('Fly & Travel')).toBeVisible();
-  await page.getByText('Start Planning').click();
-
-  // Step 2: Destinations - add 2 cities
-  await expect(page).toHaveURL('/destinations');
-  await page.getByPlaceholder('Search European capitals').fill('Lisbon');
-  await page.getByText('Lisbon').first().click();
-  await page.getByPlaceholder('Search European capitals').fill('Vienna');
-  await page.getByText('Vienna').first().click();
-  await page.getByText('Next').click();
-
-  // Step 3: Schedule
-  await expect(page).toHaveURL('/schedule');
-  await page.getByLabel('Start Date').fill('2026-07-01');
-  // Fill days for each destination
-  const dayInputs = page.locator('input[type="number"]');
-  await dayInputs.nth(0).fill('3');
-  await dayInputs.nth(1).fill('2');
-  await page.getByText('Next').click();
-
-  // Step 4: Flights - select first option for each segment
-  await expect(page).toHaveURL('/flights');
-  await page.waitForSelector('text=06:00');
-  const flightButtons = page.locator('text=06:00');
-  const count = await flightButtons.count();
-  for (let i = 0; i < count; i++) {
-    await flightButtons.nth(i).click();
+  for (let i = 0; i < 4; i++) {
+    await page.getByRole('button', { name: 'Next' }).click();
   }
-  await page.getByText('Next').click();
+  await page.getByRole('button', { name: "Let's Go" }).click();
+  await expect(page).toHaveURL('/destinations');
 
-  // Step 5: Hotels - select first hotel for each city
+  // Step 1: Destinations — add 2 cities
+  await addCity(page, 'Lisbon');
+  await addCity(page, 'Paris');
+  await page.getByRole('button', { name: 'Next' }).click();
+  await expect(page).toHaveURL('/suggestions');
+
+  // Step 2: Suggestions — pick Budget
+  await chooseSuggestion(page, 0);
+  await expect(page).toHaveURL('/schedule');
+
+  // Step 3: Schedule — verify pre-filled, then proceed
+  const startDate = page.getByLabel('Start Date');
+  await expect(startDate).not.toHaveValue('');
+  const dayInputs = page.locator('input[type="number"]');
+  await expect(dayInputs.first()).toHaveValue('2');
+  await page.getByRole('button', { name: 'Next' }).click();
+
+  // Step 4: Hotels — pre-selected from suggestion
   await expect(page).toHaveURL('/hotels');
   await page.waitForSelector('text=/night');
-  const hotelCards = page.locator('[class*="cursor-pointer"]').filter({ hasText: '/night' });
-  // Select first hotel for each destination section
-  const sections = page.locator('h3');
-  const sectionCount = await sections.count();
-  for (let i = 0; i < sectionCount; i++) {
-    const section = sections.nth(i);
-    const sectionParent = section.locator('..');
-    await sectionParent.locator('[class*="cursor-pointer"]').first().click();
-  }
-  await page.getByText('Next').click();
+  await page.getByRole('button', { name: 'Next' }).click();
 
-  // Step 6: Attractions - select first attraction for each city
+  // Step 5: Attractions — pre-selected from suggestion
   await expect(page).toHaveURL('/attractions');
-  await page.waitForSelector('text=Museum');
-  const attrSections = page.locator('h3');
-  const attrCount = await attrSections.count();
-  for (let i = 0; i < attrCount; i++) {
-    const section = attrSections.nth(i);
-    const sectionParent = section.locator('..');
-    await sectionParent.locator('[class*="cursor-pointer"]').first().click();
-  }
-  await page.getByText('Next').click();
+  await page.waitForSelector('h3');
+  await page.getByRole('button', { name: 'Next' }).click();
 
-  // Step 7: Summary
+  // Step 6: Summary — confirm
   await expect(page).toHaveURL('/summary');
   await expect(page.getByText('Trip Summary')).toBeVisible();
-  await expect(page.getByText('Fly Me A Travel')).toBeVisible();
+  await page.getByRole('button', { name: 'Fly Me A Travel' }).click();
+  await expect(page.getByText('Trip Confirmed!')).toBeVisible();
+});
 
-  // Confirm
-  await page.getByText('Fly Me A Travel').click();
+test('full manual flow — skip suggestions and configure everything', async ({ page }) => {
+  // Skip onboarding
+  await skipOnboarding(page);
+
+  // Add 1 city
+  await addCity(page, 'Vienna');
+  await page.getByRole('button', { name: 'Next' }).click();
+  await expect(page).toHaveURL('/suggestions');
+
+  // Skip suggestions
+  await page.waitForSelector('text=Budget');
+  await page.getByRole('button', { name: 'Customize Manually' }).click();
+  await expect(page).toHaveURL('/schedule');
+
+  // Fill schedule manually
+  await fillScheduleManually(page, '2026-08-01', 3);
+  await page.getByRole('button', { name: 'Next' }).click();
+
+  // Hotels
+  await expect(page).toHaveURL('/hotels');
+  await selectHotelsForAllCities(page);
+  await page.getByRole('button', { name: 'Next' }).click();
+
+  // Attractions
+  await expect(page).toHaveURL('/attractions');
+  await selectAttractionsForAllCities(page);
+  await page.getByRole('button', { name: 'Next' }).click();
+
+  // Summary
+  await expect(page).toHaveURL('/summary');
+  await page.getByRole('button', { name: 'Fly Me A Travel' }).click();
   await expect(page.getByText('Trip Confirmed!')).toBeVisible();
 });

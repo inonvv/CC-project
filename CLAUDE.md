@@ -6,6 +6,32 @@ Full-stack travel planner app. User builds a connected multi-destination trip ac
 
 Never allow inconsistent trip state. Validation must protect data integrity. State must always mirror selected destinations. Keep architecture clean and predictable. Prefer clarity over cleverness.
 
+## Development Approach — TDD
+
+Follow test-driven development. Write tests **before** developing features or fixing bugs.
+
+1. **Before coding a feature or fix:** write the relevant tests first (Playwright E2E for user flows, Vitest for unit/component logic, Pytest for backend endpoints).
+2. **Confirm the tests fail** (red) for the expected reason.
+3. **Implement** the feature or fix.
+4. **Confirm all tests pass** (green).
+5. **Refactor** if needed while keeping tests green.
+
+### Test commands
+| Layer | Command |
+|-------|---------|
+| Frontend unit (Vitest) | `npm test --prefix "frontend"` |
+| Frontend E2E (Playwright) | `npm run test:e2e --prefix "frontend"` |
+| Backend (Pytest) | `docker-compose exec backend pytest` |
+
+### Playwright E2E structure (`frontend/e2e/`)
+- `helpers.ts` — shared navigation utilities (skipOnboarding, addCity, chooseSuggestion, fillScheduleManually, etc.)
+- `happy-path.spec.ts` — full wizard flow (suggestion route + manual route)
+- `suggestions.spec.ts` — suggestions step (loading, Budget/Premium pre-fill, Customize Manually)
+- `validation.spec.ts` — validation guards per step
+- `remove-destination.spec.ts` — destination removal behavior
+- `edge-cases.spec.ts` — back-nav state, Start Over, direct URL, localStorage, single destination
+- `navigation.spec.ts` — Next/Back button traversal and visibility
+
 ## Docs Index
 
 | Doc | Description |

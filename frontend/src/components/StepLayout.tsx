@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTripStore } from '@/store/tripStore';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import planeGif from '@/assets/plane.gif';
 
 const STEPS = [
   { path: '/', label: 'Start' },
   { path: '/destinations', label: 'Destinations' },
+  { path: '/suggestions', label: 'Suggestions' },
   { path: '/schedule', label: 'Schedule & Flights' },
   { path: '/hotels', label: 'Hotels' },
   { path: '/attractions', label: 'Attractions' },
@@ -35,9 +37,10 @@ export function StepLayout({
   const previewMode = useTripStore((s) => s.previewMode);
   const resetTrip = useTripStore((s) => s.resetTrip);
   const [transitioning, setTransitioning] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const handleStepClick = (i: number) => {
-    if (previewMode && i <= 5) {
+    if (previewMode && i < STEPS.length) {
       navigate(STEPS[i].path);
     } else if (i < currentStep) {
       navigate(STEPS[i].path);
@@ -59,18 +62,19 @@ export function StepLayout({
     }
   }, [currentStep, navigate]);
 
-  const handleReset = useCallback(() => {
+  const handleResetConfirm = useCallback(() => {
+    setShowResetConfirm(false);
     resetTrip();
     navigate('/');
   }, [resetTrip, navigate]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Plane fly-across transition overlay */}
       <AnimatePresence>
         {transitioning && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[10000] flex items-center justify-center bg-background/80 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -79,12 +83,46 @@ export function StepLayout({
             <motion.img
               src={planeGif}
               alt=""
-              className="h-20 w-20"
-
+              className="plane-gif h-20 w-20"
               initial={{ x: '-40vw', opacity: 0, scale: 0.6 }}
               animate={{ x: '40vw', opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 0.6] }}
               transition={{ duration: 0.65, ease: 'easeInOut' }}
             />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Reset confirmation dialog */}
+      <AnimatePresence>
+        {showResetConfirm && (
+          <motion.div
+            className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowResetConfirm(false)}
+          >
+            <motion.div
+              className="mx-4 w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="mb-2 text-lg font-bold text-foreground">Start over?</h3>
+              <p className="mb-5 text-sm text-muted-foreground">
+                This will clear all your selections and take you back to the beginning.
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowResetConfirm(false)}>
+                  Cancel
+                </Button>
+                <Button variant="destructive" onClick={handleResetConfirm}>
+                  Reset
+                </Button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -106,7 +144,10 @@ export function StepLayout({
       )}
 
       {/* Step Indicator — flight path style */}
-      <div className="border-b border-border bg-white px-4 py-4">
+      <div className="relative border-b border-border bg-background px-4 py-4">
+        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+          <ThemeToggle />
+        </div>
         <div className="mx-auto flex max-w-4xl items-center justify-center">
           {STEPS.map((step, i) => {
             const isClickable = previewMode || i < currentStep;
@@ -114,7 +155,6 @@ export function StepLayout({
             const isCurrent = i === currentStep;
             return (
               <div key={step.path} className="flex items-center">
-                {/* Step node */}
                 <div className="flex flex-col items-center">
                   <button
                     onClick={() => handleStepClick(i)}
@@ -137,8 +177,7 @@ export function StepLayout({
                         initial={{ opacity: 0, scale: 0.4, rotate: -20 }}
                         animate={{ opacity: 1, scale: 1, rotate: 0 }}
                         transition={{ duration: 0.35, ease: 'easeOut' }}
-                        className="h-7 w-7"
-          
+                        className="plane-gif h-7 w-7"
                       />
                     ) : isCompleted ? (
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -148,8 +187,6 @@ export function StepLayout({
                       i + 1
                     )}
                   </button>
-
-                  {/* Step label */}
                   <span
                     className={`mt-1 hidden text-[10px] sm:block ${
                       isCurrent
@@ -163,7 +200,6 @@ export function StepLayout({
                   </span>
                 </div>
 
-                {/* Connector line (dashed flight path) */}
                 {i < STEPS.length - 1 && (
                   <div className="relative mx-1 h-[2px] w-6 sm:mx-2 sm:w-12">
                     <div className="absolute inset-0 border-t-2 border-dashed border-muted" />
@@ -195,39 +231,37 @@ export function StepLayout({
         {children}
       </motion.div>
 
-      {/* Navigation */}
-      {!hideNav && !previewMode && (
-        <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-white px-4 py-4">
+      {/* Bottom Navigation — visible on all steps except onboarding */}
+      {currentStep > 0 && !previewMode && (
+        <div className="fixed bottom-0 left-0 right-0 z-[500] border-t border-border/60 bg-background/95 px-4 py-3 backdrop-blur-sm">
           <div className="mx-auto flex max-w-4xl items-center justify-between">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={currentStep === 0}
-            >
-              Back
-            </Button>
+            {!hideNav ? (
+              <Button variant="ghost" size="sm" onClick={handleBack} className="gap-1 text-muted-foreground hover:text-foreground">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+                Back
+              </Button>
+            ) : (
+              <div />
+            )}
 
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                onClick={handleReset}
-                className="text-muted-foreground hover:text-destructive"
+              <button
+                onClick={() => setShowResetConfirm(true)}
+                className="rounded-md px-2.5 py-1.5 text-xs text-muted-foreground/70 transition-colors hover:text-destructive"
               >
-                Reset
-              </Button>
-              {onNext && (
+                Start Over
+              </button>
+              {!hideNav && onNext && (
                 <Button
+                  size="sm"
                   onClick={handleNext}
                   disabled={nextDisabled || transitioning}
-                  className="gap-2"
+                  className="gap-1.5 px-5"
                 >
                   {nextLabel}
-                  <img
-                    src={planeGif}
-                    alt=""
-                    className="h-5 w-5"
-      
-                  />
+                  <img src={planeGif} alt="" className="plane-gif h-4 w-4" />
                 </Button>
               )}
             </div>

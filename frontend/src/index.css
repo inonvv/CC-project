@@ -80,6 +80,40 @@
   --sidebar-ring: #06b6d4;
 }
 
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --popover: #1e293b;
+  --popover-foreground: #f1f5f9;
+  --primary: #22d3ee;
+  --primary-foreground: #0f172a;
+  --secondary: #1e293b;
+  --secondary-foreground: #f1f5f9;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #164e63;
+  --accent-foreground: #f1f5f9;
+  --destructive: #f87171;
+  --border: #334155;
+  --input: #334155;
+  --ring: #22d3ee;
+  --chart-1: #22d3ee;
+  --chart-2: #06b6d4;
+  --chart-3: #0891b2;
+  --chart-4: #0e7490;
+  --chart-5: #155e75;
+  --sidebar: #1e293b;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #22d3ee;
+  --sidebar-primary-foreground: #0f172a;
+  --sidebar-accent: #164e63;
+  --sidebar-accent-foreground: #f1f5f9;
+  --sidebar-border: #334155;
+  --sidebar-ring: #22d3ee;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -90,7 +124,18 @@
   }
 }
 
-/* Make plane.gif white background transparent everywhere */
-img[src*="plane.gif"] {
+/* Hide scrollbar but keep scrolling */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Make plane.gif white background transparent — clip to circle to hide sharp corners */
+.plane-gif {
+  border-radius: 50%;
   mix-blend-mode: multiply;
+}
+.dark .plane-gif {
+  border-radius: 50%;
+  background: var(--card);
+  mix-blend-mode: normal;
 }

@@ -76,7 +76,7 @@ export default function HotelsPage() {
 
   return (
     <StepLayout
-      currentStep={3}
+      currentStep={4}
       onNext={() => navigate('/attractions')}
       nextDisabled={!allSelected}
     >
@@ -84,7 +84,7 @@ export default function HotelsPage() {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <img src={planeGif} alt="Loading" className="mb-3 h-16 w-16" />
+          <img src={planeGif} alt="Loading" className="plane-gif mb-3 h-16 w-16" />
           <p className="text-sm text-muted-foreground">Finding the best hotels...</p>
         </div>
       ) : (

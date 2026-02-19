@@ -42,6 +42,18 @@ export interface Origin {
   lng: number;
 }
 
+export interface RouteSuggestion {
+  id: 'budget' | 'comfort' | 'premium';
+  label: string;
+  description: string;
+  startDate: string;
+  durations: Record<number, number>;
+  selectedFlights: Record<string, FlightOption>;
+  selectedHotels: Record<number, Hotel>;
+  selectedAttractions: Record<number, Attraction[]>;
+  totalPrice: number;
+}
+
 export interface TripState {
   origin: Origin | null;
   destinations: Capital[];
@@ -49,5 +61,5 @@ export interface TripState {
   durations: Record<number, number>;
   selectedFlights: Record<string, FlightOption>;
   selectedHotels: Record<number, Hotel>;
-  selectedAttractions: Record<number, Attraction>;
+  selectedAttractions: Record<number, Attraction[]>;
 }

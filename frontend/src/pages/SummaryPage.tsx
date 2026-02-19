@@ -63,7 +63,7 @@ export default function SummaryPage() {
 
   if (confirmed) {
     return (
-      <StepLayout currentStep={5} hideNav>
+      <StepLayout currentStep={6} hideNav>
         <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -77,14 +77,14 @@ export default function SummaryPage() {
               initial={{ scale: 0.4, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
-              className="mb-6 h-24 w-24"
+              className="plane-gif mb-6 h-24 w-24"
             />
             <h2 className="mb-4 text-3xl font-bold text-primary">Trip Confirmed!</h2>
             <p className="mb-6 text-lg text-muted-foreground">
               Your trip has been saved. Total cost: ${totalPrice.toFixed(2)}
             </p>
             <Button variant="outline" onClick={handlePreview} className="gap-2">
-              <img src={planeGif} alt="" className="h-5 w-5" />
+              <img src={planeGif} alt="" className="plane-gif h-5 w-5" />
               Review My Trip
             </Button>
           </motion.div>
@@ -94,7 +94,7 @@ export default function SummaryPage() {
   }
 
   return (
-    <StepLayout currentStep={5} hideNav>
+    <StepLayout currentStep={6} hideNav>
       {/* Scrollable summary with staggered fade-in */}
       <div className="max-h-[calc(100vh-180px)] overflow-y-auto pr-2">
         <motion.div
@@ -137,7 +137,7 @@ export default function SummaryPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <img src={planeGif} alt="" className="h-5 w-5" />
+                  <img src={planeGif} alt="" className="plane-gif h-5 w-5" />
                   Flights
                 </CardTitle>
               </CardHeader>
@@ -199,16 +199,22 @@ export default function SummaryPage() {
               <CardContent>
                 <div className="space-y-2">
                   {destinations.map((dest) => {
-                    const attraction = selectedAttractions[dest.id];
-                    if (!attraction) return null;
-                    return (
-                      <div key={dest.id} className="flex justify-between border-b border-border pb-2 last:border-0">
+                    const attractions = selectedAttractions[dest.id] || [];
+                    if (attractions.length === 0) {
+                      return (
+                        <div key={dest.id} className="flex justify-between border-b border-border pb-2 last:border-0">
+                          <span className="text-muted-foreground">{dest.city}: No activities selected</span>
+                        </div>
+                      );
+                    }
+                    return attractions.map((attr) => (
+                      <div key={`${dest.id}-${attr.id}`} className="flex justify-between border-b border-border pb-2 last:border-0">
                         <span>
-                          {dest.city}: {attraction.name}
+                          {dest.city}: {attr.name}
                         </span>
-                        <span className="text-muted-foreground">${attraction.price}</span>
+                        <span className="text-muted-foreground">${attr.price}</span>
                       </div>
-                    );
+                    ));
                   })}
                 </div>
               </CardContent>
@@ -227,13 +233,13 @@ export default function SummaryPage() {
             <Button size="lg" onClick={handleConfirm} disabled={saving} className="gap-2 text-base">
               {saving ? (
                 <>
-                  <img src={planeGif} alt="" className="h-5 w-5" />
+                  <img src={planeGif} alt="" className="plane-gif h-5 w-5" />
                   Booking your trip...
                 </>
               ) : (
                 <>
                   Fly Me A Travel
-                  <img src={planeGif} alt="" className="h-6 w-6" />
+                  <img src={planeGif} alt="" className="plane-gif h-6 w-6" />
                 </>
               )}
             </Button>

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Capital, Hotel, Attraction, FlightOption, Origin } from '@/types';
+import type { Capital, Hotel, Attraction, FlightOption, Origin, RouteSuggestion } from '@/types';
 
 interface TripStore {
   origin: Origin | null;
@@ -9,7 +9,7 @@ interface TripStore {
   durations: Record<number, number>;
   selectedFlights: Record<string, FlightOption>;
   selectedHotels: Record<number, Hotel>;
-  selectedAttractions: Record<number, Attraction>;
+  selectedAttractions: Record<number, Attraction[]>;
   previewMode: boolean;
 
   setOrigin: (origin: Origin) => void;
@@ -21,6 +21,7 @@ interface TripStore {
   selectFlight: (segmentKey: string, option: FlightOption) => void;
   selectHotel: (cityId: number, hotel: Hotel) => void;
   selectAttraction: (cityId: number, attraction: Attraction) => void;
+  applySuggestion: (suggestion: RouteSuggestion) => void;
   resetTrip: () => void;
   setPreviewMode: (enabled: boolean) => void;
   clearDestinations: () => void;
@@ -34,7 +35,7 @@ const initialState = {
   durations: {} as Record<number, number>,
   selectedFlights: {} as Record<string, FlightOption>,
   selectedHotels: {} as Record<number, Hotel>,
-  selectedAttractions: {} as Record<number, Attraction>,
+  selectedAttractions: {} as Record<number, Attraction[]>,
   previewMode: false,
 };
 
@@ -93,9 +94,27 @@ export const useTripStore = create<TripStore>()(
         })),
 
       selectAttraction: (cityId, attraction) =>
-        set((state) => ({
-          selectedAttractions: { ...state.selectedAttractions, [cityId]: attraction },
-        })),
+        set((state) => {
+          const current = state.selectedAttractions[cityId] || [];
+          const exists = current.some((a) => a.id === attraction.id);
+          return {
+            selectedAttractions: {
+              ...state.selectedAttractions,
+              [cityId]: exists
+                ? current.filter((a) => a.id !== attraction.id)
+                : [...current, attraction],
+            },
+          };
+        }),
+
+      applySuggestion: (suggestion) =>
+        set({
+          startDate: suggestion.startDate,
+          durations: suggestion.durations,
+          selectedFlights: suggestion.selectedFlights,
+          selectedHotels: suggestion.selectedHotels,
+          selectedAttractions: suggestion.selectedAttractions,
+        }),
 
       resetTrip: () => set(initialState),
 
@@ -123,10 +142,9 @@ export const useTripStore = create<TripStore>()(
           },
           0
         );
-        const attractionTotal = Object.values(state.selectedAttractions).reduce(
-          (sum, a) => sum + a.price,
-          0
-        );
+        const attractionTotal = Object.values(state.selectedAttractions)
+          .flat()
+          .reduce((sum, a) => sum + a.price, 0);
         return flightTotal + hotelTotal + attractionTotal;
       },
     }),

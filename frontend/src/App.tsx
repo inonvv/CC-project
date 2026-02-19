@@ -1,10 +1,11 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import OnboardingPage from '@/pages/OnboardingPage';
-import DestinationPage from '@/pages/DestinationPage';
-import SchedulePage from '@/pages/SchedulePage';
-import HotelsPage from '@/pages/HotelsPage';
-import AttractionsPage from '@/pages/AttractionsPage';
-import SummaryPage from '@/pages/SummaryPage';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import OnboardingPage from "@/pages/OnboardingPage";
+import DestinationPage from "@/pages/DestinationPage";
+import SchedulePage from "@/pages/SchedulePage";
+import HotelsPage from "@/pages/HotelsPage";
+import AttractionsPage from "@/pages/AttractionsPage";
+import SuggestionsPage from "@/pages/SuggestionsPage";
+import SummaryPage from "@/pages/SummaryPage";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<OnboardingPage />} />
         <Route path="/destinations" element={<DestinationPage />} />
+        <Route path="/suggestions" element={<SuggestionsPage />} />
         <Route path="/schedule" element={<SchedulePage />} />
         <Route path="/hotels" element={<HotelsPage />} />
         <Route path="/attractions" element={<AttractionsPage />} />

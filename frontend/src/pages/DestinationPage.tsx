@@ -16,22 +16,27 @@ export default function DestinationPage() {
   return (
     <StepLayout
       currentStep={1}
-      onNext={() => navigate('/schedule')}
+      onNext={() => navigate('/suggestions')}
       nextDisabled={destinations.length < 1}
     >
-      <h2 className="mb-6 text-2xl font-bold">Choose Your Destinations</h2>
-      <p className="mb-4 text-sm text-muted-foreground">
-        Search below or click anywhere on the map to add the nearest capital.
-      </p>
-      <div className="mb-6">
+      <div className="mb-6 text-center">
+        <h2 className="text-2xl font-bold">Choose Your Destinations</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Search or click anywhere on the map to add a capital
+        </p>
+      </div>
+
+      <div className="mb-8">
         <CitySearch />
       </div>
-      <div className="grid gap-6 lg:grid-cols-2">
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <SelectedCitiesList />
         <CityMap capitals={capitals} />
       </div>
+
       {destinations.length === 0 && (
-        <p className="mt-4 text-sm text-muted-foreground">
+        <p className="mt-6 text-center text-sm text-muted-foreground">
           Select at least 1 destination to continue.
         </p>
       )}

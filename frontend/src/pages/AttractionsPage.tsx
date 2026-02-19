@@ -53,32 +53,35 @@ export default function AttractionsPage() {
     return () => { cancelled = true; };
   }, [destKey, destinations, attractionsByCity]);
 
-  const allSelected = destinations.every((d) => selectedAttractions[d.id]);
-
   return (
     <StepLayout
-      currentStep={4}
+      currentStep={5}
       onNext={() => navigate('/summary')}
-      nextDisabled={!allSelected}
+      nextDisabled={false}
     >
       <h2 className="mb-6 text-2xl font-bold">Choose Your Attractions</h2>
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <img src={planeGif} alt="Loading" className="mb-3 h-16 w-16" />
+          <img src={planeGif} alt="Loading" className="plane-gif mb-3 h-16 w-16" />
           <p className="text-sm text-muted-foreground">Discovering top attractions...</p>
         </div>
       ) : (
         <div className="space-y-8">
           {destinations.map((dest) => (
             <div key={dest.id}>
-              <h3 className="mb-3 text-lg font-semibold">{dest.city}</h3>
+              <h3 className="mb-3 text-lg font-semibold">
+                {dest.city}
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  ({(selectedAttractions[dest.id]?.length || 0)} selected)
+                </span>
+              </h3>
               <div className="grid gap-4 sm:grid-cols-3">
                 {(attractionsByCity[dest.id] || []).map((attraction) => (
                   <AttractionCard
                     key={attraction.id}
                     attraction={attraction}
-                    selected={selectedAttractions[dest.id]?.id === attraction.id}
+                    selected={selectedAttractions[dest.id]?.some((a) => a.id === attraction.id) ?? false}
                     cityId={dest.id}
                   />
                 ))}
@@ -88,11 +91,6 @@ export default function AttractionsPage() {
         </div>
       )}
 
-      {!allSelected && !loading && (
-        <p className="mt-4 text-sm text-muted-foreground">
-          Select an attraction for every destination to continue.
-        </p>
-      )}
     </StepLayout>
   );
 }

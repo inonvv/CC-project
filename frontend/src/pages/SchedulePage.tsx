@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { StepLayout } from '@/components/StepLayout';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,7 +24,6 @@ export default function SchedulePage() {
 
   const [segments, setSegments] = useState<Segment[]>([]);
   const [openFlight, setOpenFlight] = useState<number | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Fetch flight segments
   useEffect(() => {
@@ -53,7 +52,9 @@ export default function SchedulePage() {
 
   const defaultDurations: Record<string, number> = {};
   destinations.forEach((d) => {
-    defaultDurations[String(d.id)] = durations[d.id] || 1;
+    const days = durations[d.id] || 1;
+    defaultDurations[String(d.id)] = days;
+    if (!durations[d.id]) setDuration(d.id, 1);
   });
 
   const {
@@ -88,19 +89,9 @@ export default function SchedulePage() {
     }
   }, [watchedDurations, setDuration]);
 
-  // Debounced flight panel toggle
-  const handleDaysFocus = useCallback((segmentIndex: number) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setOpenFlight(segmentIndex);
-    }, 200);
-  }, []);
-
-  const handleDaysBlur = useCallback(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      // Don't close — let the user pick a flight
-    }, 300);
+  // Toggle flight panel on card click
+  const toggleFlight = useCallback((segmentIndex: number) => {
+    setOpenFlight((prev) => (prev === segmentIndex ? null : segmentIndex));
   }, []);
 
   const allFlightsSelected = segments.length > 0 && segments.every((_, i) => selectedFlights[`segment-${i}`]);
@@ -113,7 +104,7 @@ export default function SchedulePage() {
 
   return (
     <StepLayout
-      currentStep={2}
+      currentStep={3}
       onNext={handleSubmit(onSubmit)}
       nextDisabled={!canProceed}
     >
@@ -148,17 +139,20 @@ export default function SchedulePage() {
           return (
             <div
               key={dest.id}
-              className="rounded-xl border border-border bg-white shadow-sm"
+              className="rounded-xl border border-border bg-card shadow-sm"
             >
-              {/* Top row: city name + days input centered */}
-              <div className="flex items-center justify-between p-4">
+              {/* Top row: clickable to toggle flights */}
+              <div
+                className="flex cursor-pointer items-center justify-between p-4 transition-colors hover:bg-muted/40"
+                onClick={() => toggleFlight(inboundIdx)}
+              >
                 <div className="flex items-center gap-3">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
                     {destIndex + 1}
                   </span>
                   <span className="text-lg font-semibold">{dest.city}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   <Input
                     type="number"
                     min={1}
@@ -171,8 +165,6 @@ export default function SchedulePage() {
                         shouldValidate: true,
                       });
                     }}
-                    onFocus={() => handleDaysFocus(inboundIdx)}
-                    onBlur={handleDaysBlur}
                   />
                   <span className="text-sm font-medium text-muted-foreground">days</span>
                 </div>
@@ -186,15 +178,15 @@ export default function SchedulePage() {
               {segments[inboundIdx] && (
                 <div
                   className={`overflow-hidden transition-all duration-300 ${
-                    openFlight === inboundIdx ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                    openFlight === inboundIdx ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
                   }`}
                 >
-                  <div className="border-t border-border px-4 py-3">
-                    <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                      <img src={planeGif} alt="" className="h-4 w-4" />
+                  <div className="border-t border-border px-4 pb-4 pt-3">
+                    <p className="mb-3 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                      <img src={planeGif} alt="" className="plane-gif h-4 w-4" />
                       {segments[inboundIdx].from} → {segments[inboundIdx].to}
                     </p>
-                    <div className="flex gap-2 overflow-x-auto pb-1">
+                    <div className="flex gap-2 overflow-x-auto py-1">
                       {segments[inboundIdx].options.map((opt) => (
                         <button
                           key={opt.departure}
@@ -220,32 +212,41 @@ export default function SchedulePage() {
 
         {/* Return flight — last segment */}
         {segments.length > 0 && (
-          <div className="rounded-xl border border-border bg-white shadow-sm">
-            <div className="flex items-center gap-3 p-4">
-              <img src={planeGif} alt="" className="h-8 w-8" />
+          <div className="rounded-xl border border-border bg-card shadow-sm">
+            <div
+              className="flex cursor-pointer items-center gap-3 p-4 transition-colors hover:bg-muted/40"
+              onClick={() => toggleFlight(segments.length - 1)}
+            >
+              <img src={planeGif} alt="" className="plane-gif h-8 w-8" />
               <span className="text-lg font-semibold text-muted-foreground">Return Home</span>
             </div>
-            <div className="border-t border-border px-4 py-3">
-              <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <img src={planeGif} alt="" className="h-4 w-4" />
-                {segments[segments.length - 1].from} → {segments[segments.length - 1].to}
-              </p>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {segments[segments.length - 1].options.map((opt) => (
-                  <button
-                    key={opt.departure}
-                    type="button"
-                    onClick={() => selectFlight(`segment-${segments.length - 1}`, opt)}
-                    className={`shrink-0 rounded-lg border px-4 py-2 text-center transition-all duration-200 hover:scale-[1.02] ${
-                      selectedFlights[`segment-${segments.length - 1}`]?.departure === opt.departure
-                        ? 'border-primary bg-primary/5 ring-2 ring-primary'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <span className="text-sm font-semibold">{opt.departure}</span>
-                    <span className="ml-2 text-sm font-bold text-primary">${opt.price}</span>
-                  </button>
-                ))}
+            <div
+              className={`overflow-hidden transition-all duration-300 ${
+                openFlight === segments.length - 1 ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
+              <div className="border-t border-border px-4 pb-4 pt-3">
+                <p className="mb-3 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <img src={planeGif} alt="" className="plane-gif h-4 w-4" />
+                  {segments[segments.length - 1].from} → {segments[segments.length - 1].to}
+                </p>
+                <div className="flex gap-2 overflow-x-auto py-1">
+                  {segments[segments.length - 1].options.map((opt) => (
+                    <button
+                      key={opt.departure}
+                      type="button"
+                      onClick={() => selectFlight(`segment-${segments.length - 1}`, opt)}
+                      className={`shrink-0 rounded-lg border px-4 py-2 text-center transition-all duration-200 hover:scale-[1.02] ${
+                        selectedFlights[`segment-${segments.length - 1}`]?.departure === opt.departure
+                          ? 'border-primary bg-primary/5 ring-2 ring-primary'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <span className="text-sm font-semibold">{opt.departure}</span>
+                      <span className="ml-2 text-sm font-bold text-primary">${opt.price}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -254,14 +255,14 @@ export default function SchedulePage() {
 
       {segments.length === 0 && destinations.length > 0 && (
         <div className="mt-6 flex flex-col items-center py-8">
-          <img src={planeGif} alt="Loading" className="mb-3 h-12 w-12" />
+          <img src={planeGif} alt="Loading" className="plane-gif mb-3 h-12 w-12" />
           <p className="text-sm text-muted-foreground">Computing flight routes...</p>
         </div>
       )}
 
       {!allFlightsSelected && segments.length > 0 && (
         <p className="mt-4 text-sm text-muted-foreground">
-          Select a flight for every segment to continue. Click a days input to reveal flight options.
+          Select a flight for every segment to continue. Click a city card to reveal flight options.
         </p>
       )}
     </StepLayout>
